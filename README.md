@@ -1,5 +1,7 @@
 # MetalDetect
 
+### 🔗 [**View the live project →**](https://metal-detect.vercel.app/overview)
+
 **Live heavy-metal water monitoring** — distributed electrochemical buoys stream
 telemetry from Tamil Nadu's rivers; an ML layer estimates per-metal
 concentrations, a transparent rule-based layer attributes contamination spikes to
@@ -10,8 +12,6 @@ All buoy data is **simulated** but matches the real LoRaWAN payload contract, so
 physical hardware can be swapped in later with no code change. Every external
 service used is **free and key-free** — there are no API keys to configure
 anywhere in this project.
-
-**Live deployment:** https://metal-detect.vercel.app
 
 ---
 
