@@ -11,6 +11,50 @@ physical hardware can be swapped in later with no code change. Every external
 service used is **free and key-free** — there are no API keys to configure
 anywhere in this project.
 
+**Live deployment:** https://metal-detect.vercel.app
+
+---
+
+## Specifications
+
+### Project
+| | |
+|---|---|
+| Monitored sites | 11 rivers, Tamil Nadu + neighbouring states |
+| Buoys | 11 (one per site) |
+| Tracked metals | Pb, Cr, Ni, Cu, Cd, Zn |
+| Sensor cadence | 15-minute steps; ~48 h of history seeded on startup |
+| Frontend routes | 7 pages (`/overview`, `/network`, `/alerts`, `/trends`, `/conservers`, `/lake/[id]`, `/` redirect) |
+| Frontend components | 20 (`frontend/components/`) |
+| Demo API routes | 8 (`frontend/app/api/`), mirroring the backend REST contract |
+| Backend endpoints | 10 REST + 1 WebSocket (`backend/main.py`) |
+| External services | Open-Meteo (weather), Esri World Imagery (satellite tiles) — both free, key-free |
+
+### System requirements
+| | Build / dev | Running |
+|---|---|---|
+| **Frontend** (Next.js) | **4 GB free RAM recommended** for `next build` (Turbopack's static-generation workers are memory-hungry; this repo has OOM'd on a machine with <2 GB free) | ~180–250 MB RSS for the Node server, measured under light load |
+| **Backend** (FastAPI) | ~1 GB free RAM to install + train (NumPy/Pandas/scikit-learn) | ~200 MB RSS at idle with models loaded, measured under light load |
+| Disk — frontend | `node_modules` ~600 MB+; production output (`​.next/server` + `.next/static`, what actually ships) ≈ 25 MB | |
+| Disk — backend | `.venv` a few hundred MB; trained models (`data/models/*.joblib`) ~3 MB total; synthetic dataset CSV a few MB | |
+| Node.js | 20+ (tested on 24.11) | |
+| Python | 3.11–3.14 (tested on 3.14; see XGBoost note below) | |
+
+These are measured, not vendor-quoted figures — see Verification below. Any
+modern laptop or a free-tier cloud instance (Render/Railway starter tiers are
+512 MB–1 GB) comfortably runs the backend; the frontend build is the only step
+that benefits from more RAM.
+
+### Dependencies
+- **Frontend** (`frontend/package.json`): 13 runtime deps, 8 dev deps. Key ones:
+  `next` 16.3.1, `react`/`react-dom` 19.2.8, `three` + `@react-three/fiber` +
+  `@react-three/drei`, `ogl`, `gsap`, `framer-motion`, `leaflet`, `recharts`,
+  `@tanstack/react-query`, `typescript`, `tailwindcss` 4.
+- **Backend** (`backend/requirements.txt`): `fastapi`, `uvicorn[standard]`,
+  `numpy`, `pandas`, `scikit-learn`, `joblib`, `pydantic`. `xgboost` is optional
+  (commented out) — the trainer falls back to scikit-learn's
+  `GradientBoostingRegressor` automatically if it isn't installed.
+
 ---
 
 ## Two ways to run it
@@ -22,9 +66,9 @@ The frontend works **with or without** the Python backend:
 | **Demo mode** (default) | Just deploy/run the frontend. No configuration. | Built-in simulated data layer served from Next.js route handlers under `/api`, plus live weather from Open-Meteo. Live feed polls every 5 s. |
 | **Full stack** | Set `NEXT_PUBLIC_API_BASE` to a running FastAPI service. | The real FastAPI backend: trained scikit-learn models, rule-based attribution and a true WebSocket live feed. |
 
-The frontend switches automatically based on that one environment variable. This
-is what makes the Vercel deployment work with zero setup, while still letting you
-demo the real Python ML pipeline when the backend is running.
+The frontend switches automatically based on that one environment variable —
+this is what makes the Vercel deployment work with zero setup, while still
+letting the real Python ML pipeline run when the backend is available.
 
 > The built-in demo layer does **not** run the trained scikit-learn models — it
 > inverts the same Langmuir sensor curve those models were fitted to, and mirrors
@@ -61,11 +105,11 @@ demo the real Python ML pipeline when the backend is running.
 | Service | Used for | Why |
 |---|---|---|
 | **[Open-Meteo](https://open-meteo.com)** | Live ambient temperature + 24 h rainfall per lake | Open-source weather API built on open government data (DWD/NOAA/ECMWF). **No API key.** Used by both the backend (`backend/utils/weather.py`) and the demo layer (`frontend/lib/demo/weather.ts`), batched into one request for all 11 lakes, cached 15 min, with a static seasonal fallback if unreachable. |
-| **[OpenStreetMap](https://www.openstreetmap.org) / Esri World Imagery** | Satellite map tiles | Key-free tile services. Swap the tile URL in `frontend/components/SatelliteMap.tsx` for plain OSM if you prefer fully open map data over satellite imagery. |
+| **[OpenStreetMap](https://www.openstreetmap.org) / Esri World Imagery** | Satellite map tiles | Key-free tile services. |
 
-> **Note:** OpenRouter is an LLM gateway (it routes to Claude/GPT/Llama) and does
-> not provide weather data, so it isn't used here. Open-Meteo is the open,
-> key-free weather source.
+> **Note:** OpenRouter is an LLM gateway (it routes to Claude/GPT/Llama), not a
+> weather source, so it isn't used here — Open-Meteo is the open, key-free
+> weather API.
 
 ---
 
@@ -98,66 +142,30 @@ py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m ml.train      # trains the 6 models (~10s)
 .\run.ps1                                    # http://127.0.0.1:8000
 ```
-Then create `frontend/.env.local`:
-```
-NEXT_PUBLIC_API_BASE=http://127.0.0.1:8000
-```
+Then set `NEXT_PUBLIC_API_BASE=http://127.0.0.1:8000` in `frontend/.env.local`
 and restart `npm run dev`.
 
 ---
 
-## Deployment roadmap (Vercel)
+## Deployment
 
-You've already imported the repo into the Vercel dashboard. Do this:
+**Frontend (Vercel):** Root Directory = `frontend`; Framework auto-detects as
+Next.js; no environment variables required — the site runs in demo mode with
+live weather and no cold start. Live at https://metal-detect.vercel.app.
 
-### Step 1 — Set the Root Directory (required)
-This repo has `frontend/` and `backend/` side by side, so Vercel must be told
-where the Next.js app lives.
+**Backend (optional, for the real ML pipeline):** Vercel cannot host it — it
+needs a long-lived WebSocket and a background simulator loop, neither of which
+serverless functions support. Deploy `backend/` to a host with long-running
+processes (Render, Railway, Fly.io: `pip install -r requirements.txt && python
+-m ml.train` to build, `uvicorn main:app --host 0.0.0.0 --port $PORT` to run),
+then set `NEXT_PUBLIC_API_BASE` on Vercel to that URL. `NEXT_PUBLIC_WS_URL` is
+derived automatically.
 
-In your Vercel project: **Settings → Build and Deployment → Root Directory** →
-set to `frontend` → **Save**.
-
-Framework Preset should auto-detect as **Next.js**. Leave Build Command, Output
-Directory and Install Command on their defaults.
-
-### Step 2 — Deploy
-**Deployments → Redeploy** (or push any commit to `main`).
-
-That's it — the site is now fully working in demo mode. Every screen has live
-data, weather comes from Open-Meteo, and there are **no environment variables to
-set**. Verify at `https://<your-app>.vercel.app/api/health` — it should report
-`"mode":"demo"` and `"weather_source":"open-meteo"`.
-
-### Step 3 (optional) — Add the real Python backend
-Vercel **cannot** host the FastAPI service: it needs a long-lived WebSocket and a
-background simulator loop, neither of which work on serverless functions. Deploy
-it to a host that supports long-running processes — [Render](https://render.com)
-free tier is the simplest:
-
-1. Render → **New → Web Service** → connect the same GitHub repo.
-2. **Root Directory:** `backend`
-3. **Build Command:** `pip install -r requirements.txt && python -m ml.train`
-4. **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Deploy, then copy the service URL (e.g. `https://metaldetect-api.onrender.com`).
-
-Then in Vercel: **Settings → Environment Variables** → add
-
-| Key | Value |
-|---|---|
-| `NEXT_PUBLIC_API_BASE` | `https://metaldetect-api.onrender.com` |
-
-Redeploy. The frontend now uses the real models and a live WebSocket. (`NEXT_PUBLIC_WS_URL`
-is derived automatically — only set it if your WS lives on a different host.)
-
-Before going live, tighten CORS in `backend/main.py` — it currently uses
-`allow_origins=["*"]` for the demo. Replace with your Vercel domain.
-
-### Step 4 — Demo-day checklist
-- Render's free tier **sleeps after ~15 min idle** and takes ~50 s to wake. Hit
-  the backend URL a few minutes before demoing, or stay in demo mode (which has
-  no cold start) for the actual presentation.
-- To force demo mode at any time, delete `NEXT_PUBLIC_API_BASE` in Vercel and
-  redeploy — the site keeps working regardless of backend state.
+CORS in `backend/main.py` is restricted to the production origin
+(`https://metal-detect.vercel.app`) and `http://localhost:3000` for local dev —
+update it if the deployment domain changes. Free-tier backend hosts typically
+sleep after ~15 min idle (~50 s cold start on first request); demo mode has no
+such cold start and is the safer default for a live presentation.
 
 ---
 
@@ -180,6 +188,10 @@ the two never drift. After editing `backend/data/sites.py` or `backend/config.py
   OpenBLAS thread-allocation error.
 - **npm cache on a full C: drive** — if `npm install` fails with `ENOSPC`,
   redirect the cache: `$env:npm_config_cache="D:\npm-cache"; npm install`.
+- **`next build` needs headroom** — Turbopack's static-generation workers have
+  OOM'd on this project when free system RAM dropped below ~1 GB. If a local
+  build crashes with `FATAL ERROR: ... out of memory`, free up RAM (close other
+  apps/tabs) and retry; Vercel's build machines aren't affected by this.
 
 ---
 

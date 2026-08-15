@@ -38,7 +38,10 @@ app = FastAPI(title="MetalDetect API", version="1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # demo only; restrict for production
+    # Browsers send Origin as scheme+host+port only, never a path — a value
+    # like ".../overview" here would never match and silently block every
+    # request from the deployed frontend.
+    allow_origins=["https://metal-detect.vercel.app", "http://localhost:3000"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
