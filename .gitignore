@@ -33,5 +33,7 @@ yarn-error.log*
 # ---- OS / editor ----
 .DS_Store
 Thumbs.db
+# Word/Excel lock files
+~$*
 *.pem
 *.zip

@@ -17,10 +17,14 @@ export default function OverviewPage() {
   const router = useRouter();
   const heroContainerRef = useRef<HTMLDivElement>(null);
   const heroCopyRef = useRef<HTMLDivElement>(null);
+  const scrollCueRef = useRef<HTMLDivElement>(null);
+  const menuHintRef = useRef<HTMLDivElement>(null);
 
   // Scroll blurs + lifts the wordmark out as the new copy rises to replace it.
-  // Applied straight in the scroll handler (writing three cheap style props) so
-  // it stays correct even where rAF is throttled.
+  // The two landing hints (scroll cue, menu hint) fade out on the same curve
+  // so they're gone before the reveal copy arrives underneath them.
+  // Applied straight in the scroll handler (writing plain style props) so it
+  // stays correct even where rAF is throttled.
   useEffect(() => {
     const apply = () => {
       const vh = window.innerHeight;
@@ -30,6 +34,9 @@ export default function OverviewPage() {
         heroCopyRef.current.style.opacity = String(Math.max(1 - p * 1.5, 0));
         heroCopyRef.current.style.transform = `translateY(${-p * 48}px)`;
       }
+      const hintOpacity = String(Math.max(0.5 - p * 0.75, 0));
+      if (scrollCueRef.current) scrollCueRef.current.style.opacity = hintOpacity;
+      if (menuHintRef.current) menuHintRef.current.style.opacity = hintOpacity;
     };
     apply();
     window.addEventListener("scroll", apply, { passive: true });
@@ -44,6 +51,68 @@ export default function OverviewPage() {
       <div style={{ position: "fixed", top: 18, left: 30, zIndex: 30 }}>
         <MetalLogo size={52} resolution={256} />
       </div>
+
+      {/* "Hover for menu" — left-centre, vertical, pointing at the hidden nav
+          wheel's hover zone. pointer-events: none so it never blocks the
+          hover that actually reveals the wheel. */}
+      <div
+        ref={menuHintRef}
+        aria-hidden
+        style={{
+          position: "fixed",
+          left: 20,
+          top: "50%",
+          zIndex: 20,
+          transform: "translateY(-50%) rotate(180deg)",
+          opacity: 0.5,
+          pointerEvents: "none",
+          writingMode: "vertical-rl",
+        }}
+      >
+        <span className="t-eyebrow" style={{ color: "#FEFAEF" }}>
+          Hover for menu
+        </span>
+      </div>
+
+      {/* Bottom-centre scroll cue — a small chevron that pops upward on a
+          loop, inviting the scroll into the reveal copy below. */}
+      <div
+        ref={scrollCueRef}
+        aria-hidden
+        style={{
+          position: "fixed",
+          bottom: 26,
+          left: "50%",
+          zIndex: 20,
+          transform: "translateX(-50%)",
+          opacity: 0.5,
+          pointerEvents: "none",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 7,
+        }}
+      >
+        <svg
+          className="overview-scroll-pop"
+          width="14"
+          height="8"
+          viewBox="0 0 14 8"
+          fill="none"
+        >
+          <path
+            d="M1 7L7 1L13 7"
+            stroke="#FEFAEF"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="t-eyebrow" style={{ color: "#FEFAEF" }}>
+          Scroll
+        </span>
+      </div>
+
       {/* AcidSquares — the Overview background animation, tuned to the palette. */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
         <AcidSquares
@@ -219,6 +288,17 @@ export default function OverviewPage() {
           max-width: 880px;
         }
         .overview-reveal-body .scroll-reveal-text .word { color: #c9d2e4; }
+
+        @keyframes overviewScrollPop {
+          0%, 100% { transform: translateY(0); opacity: 0.55; }
+          50%      { transform: translateY(-6px); opacity: 1; }
+        }
+        .overview-scroll-pop {
+          animation: overviewScrollPop 1.6s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .overview-scroll-pop { animation: none; }
+        }
       `}</style>
     </div>
   );

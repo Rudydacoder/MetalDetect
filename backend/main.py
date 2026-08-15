@@ -29,8 +29,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import store
 from config import METAL_NAMES, METAL_RANGES, METALS, SIM_INTERVAL_SECONDS
-from data.sites import BUOYS, CANDIDATE_SOURCES, LAKES, WEATHER, buoys_for_lake
+from data.sites import BUOYS, CANDIDATE_SOURCES, LAKES, buoys_for_lake
 from schemas import SensorReading
+from utils import weather
 from utils.simulator import next_reading
 
 app = FastAPI(title="MetalDetect API", version="1.0")
@@ -109,6 +110,12 @@ def metals() -> dict:
     }
 
 
+@app.get("/weather")
+def weather_all() -> dict:
+    """Live weather per lake from Open-Meteo (falls back to seasonal averages)."""
+    return {"live": weather.is_live(), "weather": weather.all_weather()}
+
+
 @app.get("/lakes")
 def lakes() -> list[dict]:
     out = []
@@ -116,7 +123,7 @@ def lakes() -> list[dict]:
         buoys = buoys_for_lake(lake["id"])
         for b in buoys:
             b["status"] = store.status_of(b["id"])
-        out.append({**lake, "buoys": buoys, "weather": WEATHER.get(lake["id"])})
+        out.append({**lake, "buoys": buoys, "weather": weather.get(lake["id"])})
     return out
 
 
@@ -130,7 +137,7 @@ def lake(lake_id: str) -> dict:
     return {
         **LAKES[lake_id],
         "buoys": buoys,
-        "weather": WEATHER.get(lake_id),
+        "weather": weather.get(lake_id),
         "candidate_sources": CANDIDATE_SOURCES.get(lake_id, []),
     }
 

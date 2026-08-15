@@ -139,6 +139,10 @@ export default function SatelliteMap({ nodes, onBuoyClick }: SatelliteMapProps) 
 
     return () => {
       cancelled = true;
+      // Cancel any in-flight pan/zoom animation (from fitBounds or a popup's
+      // autoPan) before tearing down — otherwise its queued animation frame
+      // fires after removal and reads `_leaflet_pos` off a destroyed marker.
+      leafletMap.current?.stop();
       leafletMap.current?.remove();
       leafletMap.current = null;
       markersRef.current = [];

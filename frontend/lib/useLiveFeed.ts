@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { WS_URL } from "./api";
+import { DEMO_MODE, LIVE_POLL_URL, WS_URL } from "./api";
 import type { LiveUpdate, Status } from "./types";
 
 export interface LiveState {
@@ -10,9 +10,17 @@ export interface LiveState {
   connected: boolean;
 }
 
+/** How often demo mode polls for fresh readings. */
+const POLL_MS = 5000;
+
 /**
- * Subscribes to the backend WebSocket and keeps the latest update per buoy.
- * Auto-reconnects with a short backoff so the demo survives a backend restart.
+ * Keeps the latest update per buoy.
+ *
+ * With a real backend it subscribes to the WebSocket and auto-reconnects with a
+ * short backoff, so the demo survives a backend restart. In demo mode (no
+ * NEXT_PUBLIC_API_BASE — e.g. a bare Vercel deployment) serverless can't hold a
+ * socket open, so it polls `/api/live` on an interval instead. Both paths fill
+ * the same `byBuoy` map, so callers don't care which is running.
  */
 export function useLiveFeed(): LiveState {
   const [byBuoy, setByBuoy] = useState<Record<string, LiveUpdate>>({});
@@ -23,8 +31,39 @@ export function useLiveFeed(): LiveState {
   useEffect(() => {
     let closed = false;
 
+    // ---- Demo mode: poll the built-in snapshot endpoint ----
+    if (DEMO_MODE || !WS_URL) {
+      let timer: ReturnType<typeof setTimeout> | null = null;
+
+      const poll = async () => {
+        try {
+          const res = await fetch(LIVE_POLL_URL, { cache: "no-store" });
+          if (!res.ok) throw new Error(String(res.status));
+          const { updates } = (await res.json()) as {
+            updates: Record<string, LiveUpdate>;
+          };
+          if (closed) return;
+          setByBuoy(updates ?? {});
+          setConnected(true);
+        } catch {
+          if (!closed) setConnected(false);
+        } finally {
+          if (!closed) timer = setTimeout(poll, POLL_MS);
+        }
+      };
+
+      poll();
+      return () => {
+        closed = true;
+        if (timer) clearTimeout(timer);
+      };
+    }
+
+    // ---- Real backend: WebSocket with reconnect ----
+    // Captured locally so it stays narrowed to `string` inside the closure.
+    const url: string = WS_URL;
     const connect = () => {
-      const ws = new WebSocket(WS_URL);
+      const ws = new WebSocket(url);
       wsRef.current = ws;
 
       ws.onopen = () => setConnected(true);
