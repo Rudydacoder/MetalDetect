@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AcidSquares from "@/components/AcidSquares";
 import CyberGlobe from "@/components/CyberGlobe";
+import MetalLogo from "@/components/MetalLogo";
 import ScreenLoader from "@/components/ScreenLoader";
 import ScrollReveal from "@/components/ScrollReveal";
 import VariableProximity from "@/components/VariableProximity";
@@ -38,6 +39,11 @@ export default function OverviewPage() {
   return (
     <div style={{ position: "relative", background: "#101838" }}>
       <ScreenLoader label="Rendering the globe…" />
+
+      {/* Site logo — animated liquid-metal mark, Overview top-left only. */}
+      <div style={{ position: "fixed", top: 18, left: 30, zIndex: 30 }}>
+        <MetalLogo size={52} resolution={256} />
+      </div>
       {/* AcidSquares — the Overview background animation, tuned to the palette. */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
         <AcidSquares
