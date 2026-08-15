@@ -1,0 +1,80 @@
+/* Loading buffer — fully black, splits down the middle and opens to reveal. */
+.buffer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: all;
+  background: #000; /* base under the seam, so nothing flashes through */
+}
+
+/* The two halves that slide apart on open. Fully black, with a faint seam so
+   the middle separation reads. */
+.buffer__half {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: #000000;
+  transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform;
+}
+.buffer__half--top {
+  top: 0;
+  box-shadow: 0 1px 0 rgba(175, 210, 250, 0.16);
+}
+.buffer__half--bottom {
+  bottom: 0;
+  box-shadow: 0 -1px 0 rgba(175, 210, 250, 0.16);
+}
+.buffer--open .buffer__half--top {
+  transform: translateY(-100%);
+}
+.buffer--open .buffer__half--bottom {
+  transform: translateY(100%);
+}
+
+/* Centre content — the metallic logo + label, fades away just before the split. */
+.buffer__core {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  transition: opacity 0.4s ease, transform 0.5s ease;
+}
+.buffer--open .buffer__core {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+.buffer__label {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8b96b3;
+  animation: buffer-breathe 1.8s ease-in-out infinite;
+}
+
+@keyframes buffer-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buffer__label {
+    animation: none;
+  }
+  .buffer__half {
+    transition-duration: 0.2s;
+  }
+}

@@ -7,6 +7,7 @@ import { LineChart, Line, YAxis, ResponsiveContainer } from "recharts";
 import BuoyModel from "@/components/BuoyModel";
 import BorderGlow from "@/components/BorderGlow";
 import CountUp from "@/components/CountUp";
+import ScreenLoader from "@/components/ScreenLoader";
 import { api } from "@/lib/api";
 import { useLiveFeed } from "@/lib/useLiveFeed";
 import { STATUS_COLOR, type Lake, type Status } from "@/lib/types";
@@ -39,6 +40,7 @@ export default function LakeDetail() {
 
   return (
     <div style={{ minHeight: "100dvh", padding: "32px 40px 60px" }}>
+      <ScreenLoader label="Rendering the buoy…" />
       {/* breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
         <Link href="/network" style={{ color: "var(--teal)", textDecoration: "none" }}>

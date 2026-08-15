@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AcidSquares from "@/components/AcidSquares";
 import CyberGlobe from "@/components/CyberGlobe";
+import ScreenLoader from "@/components/ScreenLoader";
 import ScrollReveal from "@/components/ScrollReveal";
 import VariableProximity from "@/components/VariableProximity";
 
@@ -36,6 +37,7 @@ export default function OverviewPage() {
 
   return (
     <div style={{ position: "relative", background: "#101838" }}>
+      <ScreenLoader label="Rendering the globe…" />
       {/* AcidSquares — the Overview background animation, tuned to the palette. */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
         <AcidSquares

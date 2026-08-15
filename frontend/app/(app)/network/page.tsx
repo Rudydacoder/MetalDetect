@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import BorderGlow from "@/components/BorderGlow";
 import PixelCard from "@/components/PixelCard";
+import ScreenLoader from "@/components/ScreenLoader";
 import { api } from "@/lib/api";
 import { useLiveFeed } from "@/lib/useLiveFeed";
 import { STATUS_COLOR, type Lake, type Status } from "@/lib/types";
@@ -76,6 +77,7 @@ export default function NetworkPage() {
 
   return (
     <div style={{ minHeight: "100dvh", padding: "32px 40px 60px" }}>
+      <ScreenLoader label="Loading the network map…" />
       <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.02em" }}>
         Live Network
       </h1>

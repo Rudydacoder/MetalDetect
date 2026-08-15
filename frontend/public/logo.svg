@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black-filled, padded silhouette for the MetallicPaint effect to show
+       through: a water droplet (MetalDetect = water monitoring) with a sensor
+       band cut through the middle. Even-odd fill keeps the band as a hole. -->
+  <path fill="#000000" fill-rule="evenodd" d="
+    M256 84
+    C 256 84 392 250 392 330
+    A 136 136 0 1 1 120 330
+    C 120 250 256 84 256 84 Z
+    M170 322
+    L 342 322
+    L 342 356
+    L 170 356
+    Z
+  "/>
+</svg>

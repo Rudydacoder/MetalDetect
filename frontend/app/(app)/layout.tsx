@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import BallCursor from "@/components/BallCursor";
+import MetalLogo from "@/components/MetalLogo";
 import OptionWheel from "@/components/OptionWheel";
 import TabBackground from "@/components/TabBackground";
 
@@ -33,6 +35,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div style={{ minHeight: "100dvh", position: "relative" }}>
       <BallCursor />
       {showVeil && <TabBackground />}
+
+      {/* Site logo — the animated liquid-metal mark, top-centre, links home. */}
+      <Link
+        href="/overview"
+        aria-label="MetalDetect home"
+        style={{
+          position: "fixed",
+          top: 12,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 70,
+          display: "block",
+        }}
+      >
+        <MetalLogo size={46} resolution={240} />
+      </Link>
+
       <main style={{ minHeight: "100dvh", position: "relative", zIndex: 1 }}>{children}</main>
 
       {/* No sidebar — a thin left-edge zone reveals just the circular nav wheel

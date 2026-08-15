@@ -1,27 +1,27 @@
 "use client";
 
 /**
- * LoadingScreen — the boot buffer.
+ * LoadingScreen — the initial boot buffer.
  *
- * Shows a branded splash over the whole viewport on first load (the Overview
- * route pulls in fonts, three.js, a GLB globe and WebGL shaders, so there is a
- * real cold-start cost). Once the page has finished loading it "opens": the two
- * halves slide apart to reveal the app underneath.
+ * Covers the whole viewport on first load (the Overview route pulls in fonts,
+ * three.js, a GLB globe and WebGL shaders, so there is a real cold-start cost)
+ * and shows the animated liquid-metal logo. Once the page has finished loading
+ * it opens: the two halves slide apart to reveal the app.
  *
- * Ready signal = the window `load` event (all initial resources), floored at a
- * short minimum so it never just flashes, and capped by a hard fallback so it
- * can never get stuck if `load` is missed. Mounts once in the root layout, so
- * it only plays on the initial visit — not on client-side tab switches.
+ * Ready signal = the window `load` event, floored at a short minimum so it
+ * never just flashes and capped by a hard fallback so it can never hang.
+ * Mounts once in the root layout, so it only plays on the initial visit — not
+ * on client-side tab switches (those get their own ScreenLoader).
  */
 import { useEffect, useState } from "react";
-import "./LoadingScreen.css";
+import BufferOverlay from "./BufferOverlay";
 
-const MIN_MS = 700; // don't flash — always show at least this long
-const MAX_MS = 4500; // safety net — never hang the UI behind the splash
+const MIN_MS = 700;
+const MAX_MS = 5000;
 
 export default function LoadingScreen() {
-  const [opening, setOpening] = useState(false); // halves start sliding apart
-  const [done, setDone] = useState(false); // fully removed from the DOM
+  const [opening, setOpening] = useState(false);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     const start = Date.now();
@@ -34,11 +34,8 @@ export default function LoadingScreen() {
       window.setTimeout(() => setOpening(true), wait);
     };
 
-    if (document.readyState === "complete") {
-      open();
-    } else {
-      window.addEventListener("load", open, { once: true });
-    }
+    if (document.readyState === "complete") open();
+    else window.addEventListener("load", open, { once: true });
     const fallback = window.setTimeout(open, MAX_MS);
 
     return () => {
@@ -47,33 +44,15 @@ export default function LoadingScreen() {
     };
   }, []);
 
-  // Remove the overlay from the DOM after the open animation has played, so it
-  // stops capturing pointer events and can be garbage-collected.
   useEffect(() => {
     if (!opening) return;
+    // Signal that the first load is handled, so per-route ScreenLoaders start
+    // taking over from here (they suppress themselves until this flips true).
+    (window as unknown as { __MD_BOOTED__?: boolean }).__MD_BOOTED__ = true;
     const t = window.setTimeout(() => setDone(true), 950);
     return () => window.clearTimeout(t);
   }, [opening]);
 
   if (done) return null;
-
-  return (
-    <div className={`boot${opening ? " boot--open" : ""}`} aria-hidden={opening}>
-      <div className="boot__half boot__half--top" />
-      <div className="boot__half boot__half--bottom" />
-
-      <div className="boot__core">
-        <div className="boot__radar">
-          <span className="boot__ring" />
-          <span className="boot__ring" />
-          <span className="boot__ring" />
-          <span className="boot__dot" />
-        </div>
-        <div className="boot__word">
-          Metal<span className="boot__word-accent">Detect</span>
-        </div>
-        <div className="boot__sub">Initialising live water network…</div>
-      </div>
-    </div>
-  );
+  return <BufferOverlay open={opening} logoSize={200} logoResolution={560} />;
 }

@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import CardSwap, { Card } from "@/components/CardSwap";
 import CountUp from "@/components/CountUp";
+import ScreenLoader from "@/components/ScreenLoader";
 import ScrollReveal from "@/components/ScrollReveal";
 import { api } from "@/lib/api";
 import type { Lake } from "@/lib/types";
@@ -125,6 +126,7 @@ export default function ConserversPage() {
 
   return (
     <div style={{ minHeight: "100dvh", padding: "40px 40px 90px", position: "relative" }}>
+      <ScreenLoader label="Assembling the leaderboard…" />
       <InfoBadge />
 
       <div
