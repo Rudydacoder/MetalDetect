@@ -1,0 +1,221 @@
+@import "tailwindcss";
+
+/* Coolvetica — reserved for the big hero wordmark only (not body text) */
+@font-face {
+  font-family: 'Coolvetica';
+  src: url('/fonts/Coolvetica-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Coolvetica';
+  src: url('/fonts/Coolvetica-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------ */
+/*  MetalDetect theme — the four-colour deep-blue palette              */
+/*  Deep Blue #182350 · Powder Blue #AFD2FA                            */
+/*  Floral White #FEFAEF · Pale Brown #B9915E                          */
+/* ------------------------------------------------------------------ */
+:root {
+  /* Deep Blue is the base field; it darkens slightly for depth layering. */
+  --bg:   #101838;   /* deep blue, one step down */
+  --bg-2: #182350;   /* Deep Blue — the brand base */
+  --bg-3: #243268;
+
+  /* Deep Blue → Powder Blue ramp */
+  --brand:     #182350;   /* Deep Blue */
+  --brand-700: #101838;
+  --brand-500: #4a6bb5;   /* mid blue, bridges the two ends */
+  --brand-300: #7fa6e0;   /* lifted blue, legible on deep */
+  --brand-200: #AFD2FA;   /* Powder Blue */
+
+  /* Floral White — the light neutral */
+  --ivory:   #FEFAEF;
+  --ivory-2: #e6e0d2;
+  --ivory-3: #c2bcae;
+
+  /* Muted secondary / metadata — a desaturated blue-grey, not a new hue */
+  --slate:      #5d6a8e;
+  --slate-400:  #8b96b3;
+  --slate-300:  #a8b1c8;
+
+  /* Pale Brown — CTAs and rank accents only */
+  --gold:      #B9915E;
+  --gold-600:  #a17b4b;
+
+  /* surfaces — deep-blue panels over the deep-blue base */
+  --panel:       rgba(24, 35, 80, 0.66);
+  --panel-solid: #1b2758;
+  --line:        rgba(254, 250, 239, 0.16); /* floral-white hairline */
+  --line-strong: rgba(254, 250, 239, 0.32);
+
+  /* text — floral white on deep blue, deep blue on light surfaces */
+  --text:      #FEFAEF;   /* Floral White */
+  --text-dim:  #c9d2e4;
+  --text-mute: #8b96b3;
+  --on-light:  #121a3c;   /* deep-blue ink for text on floral white */
+
+  /* status (kept distinct for genuine hierarchy, not decoration) */
+  --red:   #e0697a;
+  --amber: #B9915E;
+  --green: #5fb894;
+
+  /* legacy aliases so existing markup keeps resolving during the sweep */
+  --mist:     var(--ivory);
+  --mist-2:   var(--ivory-2);
+  --mist-3:   var(--ivory-3);
+  --teal:     var(--brand-300);
+  --teal-dim: var(--brand-500);
+  --cyan:     var(--brand-200);
+  --panel-2:  var(--brand);
+
+  /* type system — deliberate pairing (all pre-cached, offline-safe) */
+  --font-display: var(--font-space), "Coolvetica", system-ui, sans-serif;
+  --font-body:    var(--font-sora), system-ui, sans-serif;
+  --font-hero:    "Coolvetica", var(--font-space), sans-serif;
+  --font-ui:      var(--font-body);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-brand: var(--brand);
+  --color-mist: var(--mist);
+  --color-gold: var(--gold);
+  --color-teal: var(--brand-300);
+  --color-cyan: var(--brand-200);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --color-green: var(--green);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-text-mute: var(--text-mute);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+html, body { height: 100%; }
+
+/* Body copy uses Sora; headings/display use Space Grotesk. Not everything is
+   the same face — that pairing is deliberate. */
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background:
+    radial-gradient(1100px 680px at 72% -12%, rgba(74, 107, 181, 0.42), transparent 60%),
+    radial-gradient(880px 560px at 6% 112%, rgba(24, 35, 80, 0.9), transparent 62%),
+    linear-gradient(180deg, #101838 0%, #182350 100%);
+  color: var(--text);
+  /* `clip` (not `hidden`) so overflow-y stays `visible` — `hidden` here would
+     promote overflow-y to `auto`, making <body> the scroll container and
+     silencing window scroll events (breaks scroll-driven hero + ScrollTrigger). */
+  overflow-x: clip;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Type scale — a real scale, not per-element guesses */
+.t-display { font-family: var(--font-display); font-weight: 700; font-size: clamp(40px, 6vw, 76px); letter-spacing: -0.035em; line-height: 1.02; }
+.t-h1      { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 3.4vw, 40px); letter-spacing: -0.025em; line-height: 1.1; }
+.t-h2      { font-family: var(--font-display); font-weight: 600; font-size: clamp(20px, 2.2vw, 27px); letter-spacing: -0.02em; line-height: 1.2; }
+.t-body    { font-family: var(--font-body); font-size: 15px; line-height: 1.65; }
+.t-small   { font-family: var(--font-body); font-size: 13px; line-height: 1.55; }
+.t-eyebrow { font-family: var(--font-jetbrains), monospace; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; }
+
+.font-mono, .tabular, code, pre, kbd, samp {
+  font-family: var(--font-jetbrains), ui-monospace, monospace !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-hero { font-family: var(--font-hero); }
+
+/* ── Status colours ───────────────────────────────────────────────── */
+.status-normal   { color: var(--green); }
+.status-elevated { color: var(--amber); }
+.status-alert    { color: var(--red);   }
+
+/* ── Glassy panel base — deep-ocean tinted, ivory hairline.
+      Reserved for genuinely elevated surfaces, not every box. ──────── */
+.glass {
+  background: linear-gradient(180deg, rgba(24, 35, 80, 0.76), rgba(16, 24, 56, 0.86));
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+
+/* A flatter, matte ocean card — the default card, so glass isn't everywhere */
+.card {
+  background: rgba(24, 35, 80, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+/* Ivory light surface — the light half of the palette. Deep-ocean ink sits on
+   it. Used sparingly for highlighted panels/chips. */
+.surface-ivory,
+.surface-mist {
+  background: var(--ivory);
+  color: var(--on-light);
+  border: 1px solid var(--ivory-2);
+  border-radius: 12px;
+}
+.surface-ivory .font-mono, .surface-ivory code,
+.surface-mist .font-mono, .surface-mist code { color: #3a4568; }
+
+/* Muted-gold CTA — the single primary action style */
+.cta-gold {
+  background: var(--gold);
+  color: #FEFAEF;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background .2s ease, transform .15s ease, box-shadow .2s ease;
+}
+.cta-gold:hover { background: var(--gold-600); box-shadow: 0 8px 30px rgba(185, 145, 94, 0.34); transform: translateY(-1px); }
+
+.cta-ghost {
+  background: transparent;
+  color: var(--ivory);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease;
+}
+.cta-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── Thin custom scrollbar ────────────────────────────────────────── */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: rgba(254, 250, 239, 0.22); border-radius: 999px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Alert pulse ──────────────────────────────────────────────────── */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.12); }
+}
+.pulse-glow { animation: pulseGlow 1.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

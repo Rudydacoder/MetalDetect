@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+numpy
+pandas
+scikit-learn
+joblib
+pydantic
+# xgboost is preferred but optional; the training code falls back to
+# scikit-learn's GradientBoostingRegressor when xgboost has no wheel
+# for the installed Python (e.g. Python 3.14). Uncomment to try:
+# xgboost

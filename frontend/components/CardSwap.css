@@ -1,0 +1,47 @@
+.card-swap-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(5%, 20%);
+  transform-origin: bottom right;
+  perspective: 900px;
+  overflow: visible;
+}
+
+/* Centred placement — keeps the whole stack on-screen instead of hanging
+   off the bottom-right corner. */
+.card-swap-container--centered {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-58%, -50%);
+  transform-origin: center center;
+}
+
+.card-swap-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 14px;
+  border: 1px solid rgba(224, 229, 233, 0.16);
+  background: linear-gradient(155deg, #1b2758 0%, #101838 100%);
+  box-shadow: 0 20px 50px rgba(1, 20, 26, 0.5);
+  cursor: pointer;
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media (max-width: 1100px) {
+  .card-swap-container--centered { transform: translate(-52%, -50%) scale(0.82); }
+}
+@media (max-width: 768px) {
+  .card-swap-container { transform: scale(0.78) translate(20%, 22%); }
+  .card-swap-container--centered { transform: translate(-50%, -50%) scale(0.62); }
+}
+@media (max-width: 480px) {
+  .card-swap-container { transform: scale(0.58) translate(22%, 24%); }
+  .card-swap-container--centered { transform: translate(-50%, -50%) scale(0.46); }
+}

@@ -1,0 +1,20 @@
+.scroll-reveal {
+  margin: 0;
+}
+
+.scroll-reveal-text {
+  font-family: var(--font-body);
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  line-height: 1.55;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.scroll-reveal-text .word {
+  display: inline-block;
+  color: var(--mist);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal-text .word { opacity: 1 !important; filter: none !important; }
+}

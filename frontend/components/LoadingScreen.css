@@ -1,0 +1,143 @@
+/* Boot buffer overlay — deep-blue palette, opens by splitting in two. */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: all;
+}
+
+/* The two halves that slide apart on open. Each carries the background so the
+   split reads cleanly. */
+.boot__half {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(180deg, #101838 0%, #182350 100%);
+  transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform;
+}
+.boot__half--top {
+  top: 0;
+  box-shadow: 0 1px 0 rgba(175, 210, 250, 0.14);
+}
+.boot__half--bottom {
+  bottom: 0;
+  box-shadow: 0 -1px 0 rgba(175, 210, 250, 0.14);
+}
+.boot--open .boot__half--top {
+  transform: translateY(-100%);
+}
+.boot--open .boot__half--bottom {
+  transform: translateY(100%);
+}
+
+/* Centre content — fades and lifts away just before the halves part. */
+.boot__core {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  transition: opacity 0.4s ease, transform 0.5s ease;
+}
+.boot--open .boot__core {
+  opacity: 0;
+  transform: translateY(-14px);
+}
+
+/* Radar / detector ping — concentric rings expanding out from a core dot. */
+.boot__radar {
+  position: relative;
+  width: 84px;
+  height: 84px;
+}
+.boot__ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(175, 210, 250, 0.55);
+  animation: boot-ping 2.1s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  opacity: 0;
+}
+.boot__ring:nth-child(2) {
+  animation-delay: 0.7s;
+}
+.boot__ring:nth-child(3) {
+  animation-delay: 1.4s;
+}
+.boot__dot {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #afd2fa;
+  box-shadow: 0 0 18px rgba(175, 210, 250, 0.9);
+  animation: boot-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes boot-ping {
+  0% {
+    transform: scale(0.25);
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@keyframes boot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.boot__word {
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: clamp(26px, 5vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fefaef;
+}
+.boot__word-accent {
+  color: #afd2fa;
+}
+.boot__sub {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8b96b3;
+}
+
+/* Respect reduced-motion: no ring animation, and the split is near-instant. */
+@media (prefers-reduced-motion: reduce) {
+  .boot__ring,
+  .boot__dot {
+    animation: none;
+  }
+  .boot__ring {
+    opacity: 0.3;
+  }
+  .boot__half {
+    transition-duration: 0.2s;
+  }
+}
